@@ -1,0 +1,118 @@
+Code to Collect Data with DHT11 Sensor
+
+#include "DHT.h"
+
+#define DHTPIN A1    // Pin connected to the DHT sensor
+#define DHTTYPE DHT11 // DHT 11 sensor type
+
+// Connect pin 1 of the sensor (left) to +5V
+// Connect pin 2 of the sensor to the data pin defined on your Arduino
+// Connect pin 4 of the sensor to GND
+// Connect a 10K resistor between pin 2 (data) and pin 1 (VCC) of the sensor
+
+DHT dht(DHTPIN, DHTTYPE);
+
+void setup() 
+{
+  Serial.begin(9600);
+  Serial.println("DHTxx test!");
+  dht.begin();
+}
+
+void loop() 
+{
+  // Reading temperature and humidity takes about 250ms!
+  // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
+  float humidity = dht.readHumidity();
+  float temperature = dht.readTemperature();
+
+  // Check if any reads failed and exit early (to try again).
+  if (isnan(temperature) || isnan(humidity)) 
+  {
+    Serial.println("Failed to read from DHT sensor!");
+  } 
+  else
+  {
+    Serial.print("Humidity: ");
+    Serial.print(humidity);
+    Serial.print(" %\t");
+    Serial.print("Temperature: ");
+    Serial.print(temperature);
+    Serial.println(" *C");
+  }
+
+  delay(2000); // Wait 2 seconds before the next reading
+}
+
+Code to Send Sensor Data to PLX-DAQ
+
+#include <DHT.h>
+
+// Define the data pin for the DHT11 sensor
+#define DHTPIN 2 // Pin 2 connected to the DHT11 sensor
+
+// Define the type of DHT sensor
+#define DHTTYPE DHT11
+
+// Create an instance of the DHT sensor
+DHT dht(DHTPIN, DHTTYPE);
+
+// Function to initialize PLX-DAQ
+void Initialize_PlxDaq()
+{
+  Serial.println("CLEARDATA"); // Clears any data left from previous projects
+  Serial.println("LABEL,Date,Time,Temperature,Humidity"); // Sets column labels
+}
+
+// Function to write data to PLX-DAQ
+void Write_PlxDaq(float temperature, float humidity)
+{
+  Serial.print("DATA"); // Indicates that data follows
+  Serial.print(","); // Move to the next column using a ","
+
+  Serial.print("DATE"); // Store date in Excel
+  Serial.print(","); // Move to the next column using a ","
+
+  Serial.print("TIME"); // Store time in Excel
+  Serial.print(","); // Move to the next column using a ","
+
+  Serial.print(temperature); // Store temperature in Excel
+  Serial.print(","); // Move to the next column using a ","
+
+  Serial.print(humidity); // Store humidity in Excel
+  Serial.print(","); // Move to the next column using a ","
+
+  Serial.println(); // End of row, move to the next row
+}
+
+void setup()
+{
+  Serial.begin(9600);
+  dht.begin();
+  Initialize_PlxDaq();
+}
+
+void loop()
+{
+  // Read humidity and temperature
+  float humidity = dht.readHumidity();
+  float temperature = dht.readTemperature();
+
+  // Check if the reading is valid
+  if (isnan(temperature) || isnan(humidity))
+  {
+    Serial.println("Failed to read from DHT sensor!");
+  }
+  else
+  {
+    Write_PlxDaq(temperature, humidity);
+  }
+
+  delay(2000); // Wait 2 seconds before the next reading
+}
+How to Write It
+The Arduino Uno board was used to develop a temperature and humidity control system, enabling simplified data sharing via the Internet of Things (IoT). The DHT11 sensor measures temperature in the range of 0°C to 50°C and air humidity between 20% and 90%, with an accuracy of 2°C for temperature and 5% for humidity. We connected the sensor's data pin to analog pin A2 on the Arduino Uno, the power pin (VCC) to the 5V power port of the Arduino Uno, and the ground pin (GND) of the DHT11 sensor to the GND port of the Arduino Uno. Then, we installed the DHT11 library in the Arduino IDE software and developed a code based on C++, which is the standard programming language in the Arduino environment.
+Libraries and basic flow control structures are all part of the C++ language, with the Arduino development environment utilizing a specific set of libraries to facilitate interaction with hardware and peripherals. Firstly, we include the dht11.h library in our code. This library contains the necessary functions to interact with the DHT11 sensor. Next, we define the constant DHT11PIN, which represents the digital pin to which the DHT11 sensor is connected. In our case, we designate pin 4 as the communication pin with the sensor. Then, we declare a DHT11 object of the dht11 class. This object is used to access the functions of the dht11.h library and to read sensor data.
+In the setup() function, we initialize serial communication with a transmission rate of 9600 baud. This allows us to send data read by the Arduino to a computer through the serial port. The loop() function is responsible for repeatedly executing the main program code. At the beginning of each iteration, we print a blank line on the serial monitor to facilitate data reading. Then, we read data from the DHT11 sensor using the DHT11.read(DHT11PIN) function. The humidity and temperature values read by the sensor are then printed on the serial monitor with two decimal places of precision. After printing the data, the program waits for 2 seconds before performing a new sensor reading using the delay(2000) function. After verifying and uploading the code to the Arduino, we observe the sensor functioning in the Serial Viewer tab. We then proceed to send the data to Excel. Excel is user-friendly and allows for cloud sending. To send real-time Arduino data to Excel desktop and subsequently for data processing and visualization on the web, we use a free Excel extension called PLX-DAQ, developed by Parallax. Initially, we install PLX-DAQ on the server and open Excel, enabling the use of Excel add-ins, essential for connecting Arduino to Excel via PLX-DAQ.
+Next, we enhanced the original code by adding the function to send Arduino Uno data to PLX-DAQ. The code now reads the sensor when the button connected to the board is pressed, initiating a reading from the defined analog port. The Arduino Uno's temperature and humidity control system with the DHT11 sensor performs five consecutive readings, and after each reading, the data is sent via Universal Asynchronous Receiver/Transmitter (UART), an essential component in electronic systems for asynchronous serial communication. Its primary function is to convert parallel data from Arduino into a serial format for transmission and vice versa, converting received serial data back into parallel format. In other words, the data is encapsulated and sent via UART, where it is converted into a serial format before being transmitted to the target device, such as PLX-DAQ. The latter is integrated with Excel, allowing for convenient and efficient data visualization and processing.The flowchart illustrated in Figure 3 represents the workflow of the emperature and humidity control system based on data transmission to the web.    
+
